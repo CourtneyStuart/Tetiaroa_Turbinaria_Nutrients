@@ -21,13 +21,13 @@ conflicted::conflict_prefer("annotate", "ggplot2")
 
 #### DIRECTORIES ####
 # working directory and relative folder path
-setwd("E:/Data/StuartC_DPhil_Ch1/")
-# set_here("E:/Data/StuartC_DPhil_Ch1/") set first-time only
+setwd("F:/Data/StuartC_DPhil_Ch1/")
+# set_here("F:/Data/StuartC_DPhil_Ch1/") set first-time only
 here::i_am(".here")
 here::here() # verify where we are according to the here package
 
 # load working environment from modelling script
-load(here("Code", "Nutrientscape_Modelling.RData"))
+load(here("Code", "04_Modelling_Nutrientscape.RData"))
 
 #### PRETTIER PDPs ####
 # make nicer partial dependence plots for the GAM with all predictors
@@ -102,7 +102,7 @@ GAM1_plan_curve = draw(GAM1, select = "s(Plan_Curve)") &
   labs(y = "s(Plan_Curve)", x = expression("Planform curvature (" * m^-1 * ")"), 
        title = NULL) 
 GAM1_plan_curve = GAM1_plan_curve +
-  annotate("text", x = Inf, y = Inf, label = "italic(p == 0.04)", 
+  annotate("text", x = Inf, y = Inf, label = "italic(p == 0.03)", 
          parse = TRUE, size = 12 / .pt, color = "gray20", 
          hjust = 1.1, vjust = 1.5)
 plot(GAM1_plan_curve)
@@ -159,7 +159,7 @@ GAM1_birds = draw(GAM1, select = "s(Seabird_Biomass)") &
   labs(y = "s(Seabird_Biomass)", x = "Breeding seabird biomass (kg/ha)", 
        title = NULL)
 GAM1_birds = GAM1_birds +
-  annotate("text", x = Inf, y = Inf, label = "NS", 
+  annotate("text", x = Inf, y = Inf, label = "italic(p == 0.01)", 
            parse = TRUE, size = 12 / .pt, color = "gray20", 
            hjust = 1.3, vjust = 1.6)
 plot(GAM1_birds)
@@ -489,10 +489,10 @@ bird_smooths_with_rug = ggplot() +
 bird_smooths_with_rug = bird_smooths_with_rug +
   geom_rect(aes(xmin = 950, xmax = 1100, ymin = 2.6, ymax = 3), 
             fill = "white", alpha = 0.4, color = NA, inherit.aes = FALSE) +
-  annotate("text", x = Inf, y = Inf, label = "NS", 
+  annotate("text", x = Inf, y = Inf, label = "italic(p == 0.01)", 
            parse = TRUE, size = 12 / .pt, color = "gray20", 
            hjust = 1.3, vjust = 1.6) +
-  annotate("text", x = Inf, y = Inf, label = "NS", 
+  annotate("text", x = Inf, y = Inf, label = "italic(p == 0.02)", 
            parse = TRUE, size = 12 / .pt, color = "darkcyan", 
            hjust = 1.3, vjust = 2.7)
 
@@ -518,6 +518,40 @@ plot(combined)
 save_plot(
   filename = here("Figures", "Combined_Smooths.png"),
   plot = combined,
+  base_height = 8, base_width = 16, dpi = 400)
+
+all_smooths_no_y =  plot_grid(bird_smooths_with_rug + theme(axis.title.y = element_blank()),
+                         land_smooths_with_rug + theme(axis.title.y = element_blank()),
+                         depth_smooths_with_rug + theme(axis.title.y = element_blank()),
+                         GAM1_slope + theme(axis.title.y = element_blank()), 
+                         GAM1_prof_curve + theme(axis.title.y = element_blank()),
+                         GAM1_plan_curve + theme(axis.title.y = element_blank()), 
+                         GAM1_eastness + theme(axis.title.y = element_blank()),
+                         GAM1_northness + theme(axis.title.y = element_blank()),
+                         ncol = 4, nrow = 2)
+  
+  
+  
+combined_no_y = ggdraw() +
+  draw_label(expression("Partial effect on " * delta^15 * "N " * "(\u2030)"),
+             x = 0.03, y = 0.5, angle = 90, vjust = 1, hjust = 0.5, size = 18) +  
+  draw_plot(all_smooths_no_y, x = 0.05, y = 0, width = 0.95, height = 1)  
+
+
+combined_no_y = plot_grid(legend, combined_no_y, 
+  nrow = 2, rel_heights = c(0.1, 1), rel_widths = c(1, 1)) +
+  theme(
+    plot.margin = unit(c(0, 1, 0, 0.25), "cm"),  
+    plot.background = element_rect(fill = "white", color = NA),  
+    panel.background = element_rect(fill = "white", color = NA)  
+  )
+
+plot(combined_no_y)
+
+# save the combined results
+save_plot(
+  filename = here("Figures", "Combined_Smooths_Single_Y_Label.png"),
+  plot = combined_no_y,
   base_height = 8, base_width = 16, dpi = 400)
 
 #### COMPARE SHARED DUSCHON SPLINE ####
@@ -697,6 +731,8 @@ errors = results %>%
 
 errors_GAM1 = filter(errors, Model == "GAM1")
 errors_GAM2 = filter(errors, Model == "GAM2")
+max(errors$N15_Error)
+min(errors$N15_Error)
 
 error_GAM1_plot =
   ggplot(errors_GAM1, aes(x = N15_Error, fill = Model)) +
@@ -761,13 +797,13 @@ save_plot(
 # how often were GAM1 errors within 0.5 of the actual value?
 (sum(errors_GAM1$N15_Error >= -0.5 & errors_GAM1$N15_Error <= 0.5) / nrow(errors_GAM1)) * 100
 
-# how often were GAM1 errors within 0.5 of the actual value?
+# how often were GAM2 errors within 0.5 of the actual value?
 (sum(errors_GAM2$N15_Error >= -0.5 & errors_GAM2$N15_Error <= 0.5) / nrow(errors_GAM2)) * 100
 
 # how often were GAM1 errors within 1 of the actual value?
 (sum(errors_GAM1$N15_Error >= -1 & errors_GAM1$N15_Error <= 1) / nrow(errors_GAM1)) * 100
 
-# how often were GAM1 errors within 0.5 of the actual value?
+# how often were GAM2 errors within 1 of the actual value?
 (sum(errors_GAM2$N15_Error >= -1 & errors_GAM2$N15_Error <= 1) / nrow(errors_GAM2)) * 100
 
 # plot depth vs. Error_N15_GAM1 with a best fit line

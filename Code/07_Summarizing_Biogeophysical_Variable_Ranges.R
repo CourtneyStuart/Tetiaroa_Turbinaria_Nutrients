@@ -20,13 +20,13 @@ conflicted::conflict_prefer("relocate", "dplyr")
 conflicted::conflict_prefer("partial", "pdp")
 conflicted::conflict_prefer("draw", "gratia")
 rasterOptions(progress = 'text') # progress info for processing large rasters
-rasterOptions(tmpdir = "E:/temp_raster_directory") # custom directory for temporary files
-terraOptions(tempdir = "E:/temp_raster_directory") # custom directory for temporary files
-
+options(terra.progress = 1) # progress info for processing large rasters
+rasterOptions(tmpdir = "F:/temp_raster_directory") # custom directory for temporary files
+terraOptions(tempdir = "F:/temp_raster_directory") # custom directory for temporary files
 
 #### DIRECTORIES ####
 # working directory and relative folder path
-setwd("E:/Data/StuartC_DPhil_Ch1/")
+setwd("F:/Data/StuartC_DPhil_Ch1/")
 # set_here("F:/Data/StuartC_DPhil_Ch1/") set first-time only
 here::i_am(".here")
 here::here() # check where we are according to the here package
@@ -36,7 +36,7 @@ here::here() # check where we are according to the here package
 my_crs = CRS("+proj=utm +zone=6 +south +datum=WGS84 +units=m +no_defs +type=crs")
 
 # read in the rasters that represent our variables (up to 400m offshore)
-seabird_biomass = rast(here("Data", "Rasters", "Seabird_Biomass_400m.tif"))
+seabird_biomass = rast(here("Data", "Rasters", "Seabird_Biomass_IDW_400m.tif"))
 depth = rast(here("Data", "Rasters", "Depth_400m.tif"))
 slope = rast(here("Data", "Rasters", "Slope_400m.tif"))
 meancurv = rast(here("Data", "Rasters", "QMeanCurve_400m.tif"))
@@ -50,9 +50,9 @@ fine_habitat = rast(here("Data", "Rasters", "Habitat_400m.tif"))
 
 # we won't include the terrestrial areas when calculating ranges for our 
 # environmental variables. remove land from the depth raster.
-motus = st_read(here("Data", "GIS", "Motus.shp"))
-compareCRS(motus, my_crs)
-depth_clipped = mask(depth, motus, inverse = TRUE)
+motu = st_read(here("Data", "GIS", "Motus.shp"))
+compareCRS(motu, my_crs)
+depth_clipped = mask(depth, motu, inverse = TRUE)
 #plot(depth_clipped)
 
 # do the same for all other rasters
@@ -72,14 +72,14 @@ names(rasters_list)
 # loop through each raster in the list
 for (name in names(rasters_list)) {
   # get the current raster
-  current_raster <- rasters_list[[name]]
+  current_raster = rasters_list[[name]]
   
   # clip the raster using depth_clipped as the mask
-  clipped_raster <- current_raster
-  clipped_raster[is.na(depth_clipped)] <- NA
+  clipped_raster = current_raster
+  clipped_raster[is.na(depth_clipped)] = NA
   
   # create a new variable name with suffix "_clipped"
-  new_name <- paste0(name, "_clipped")
+  new_name = paste0(name, "_clipped")
   
   # save the clipped raster to the environment
   assign(new_name, clipped_raster, envir = .GlobalEnv)
@@ -88,6 +88,7 @@ for (name in names(rasters_list)) {
   gc()
 }
 
+# calculate the range of values across the predictor rasters 
 round(minmax(seabird_biomass_clipped, compute = TRUE), digits = 2)
 round(minmax(depth_clipped, compute = TRUE), digits = 2)
 round(minmax(slope_clipped, compute = TRUE), digits = 2)
@@ -98,3 +99,20 @@ round(minmax(eastness_clipped, compute = TRUE), digits = 2)
 round(minmax(northness_clipped, compute = TRUE), digits = 2)
 round(minmax(rugosity_clipped, compute = TRUE), digits = 2)
 round(minmax(landdist_clipped, compute = TRUE), digits = 2)
+
+# calculate the range of values at the algae collection sites specifically 
+algae = read.csv(here("Data", "Model_Data", "Cleaned_Tetiaroa_2021_2023_Data.csv"))
+round(min(algae$Seabird_Biomass), digits = 2)
+round(max(algae$Seabird_Biomass), digits = 2)
+round(min(algae$Depth), digits = 2)
+round(max(algae$Depth), digits = 2)
+round(min(algae$Slope), digits = 2)
+round(max(algae$Slope), digits = 2)
+round(min(algae$Mean_Curve), digits = 2)
+round(max(algae$Mean_Curve), digits = 2)
+round(min(algae$Plan_Curve), digits = 2)
+round(max(algae$Plan_Curve), digits = 2)
+round(min(algae$Prof_Curve), digits = 2)
+round(max(algae$Prof_Curve), digits = 2)
+round(min(algae$SAPA_Rugosity), digits = 2)
+round(max(algae$SAPA_Rugosity), digits = 2)

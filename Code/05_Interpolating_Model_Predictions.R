@@ -7,13 +7,14 @@
 #                   "readxl", "dplyr", "corrplot", "Cairo", "usdm", "caret", "pdp", "ggpubr",
 #                   "ggpmisc", "rsq", "mgcv", "gamclass", "cowplot", "easystats", "DHARMa", "see",
 #                   "gbm", "spdep", "gstat", "here", "gratia", "raster", "visibly",
-#                   "parallel", "doParallel"))
+#                   "parallel", "doParallel", "sf", "sp", "ggplot2"))
 library(easypackages)
 libraries("conflicted", "tidyverse", "ggplot2", "PNWColors", "readxl", 
           "dplyr", "corrplot", "Cairo", "usdm", "caret", "pdp", "ggpubr",
           "ggpmisc", "rsq", "mgcv", "gamclass", "cowplot", "easystats",
           "DHARMa", "see", "gbm", "spdep", "gstat", "here", "gratia",
-          "raster", "visibly", "parallel", "terra", "doParallel")
+          "raster", "visibly", "parallel", "terra", "doParallel",
+          "sf", "sp", "ggplot2")
 conflicted::conflict_prefer("select", "dplyr")
 conflicted::conflict_prefer("filter", "dplyr")
 conflicted::conflict_prefer("relocate", "dplyr")
@@ -21,14 +22,14 @@ conflicted::conflict_prefer("partial", "pdp")
 conflicted::conflict_prefer("draw", "gratia")
 rasterOptions(progress = 'text') # progress info for processing large rasters
 options(terra.progress = 1) # progress info for processing large rasters
-rasterOptions(tmpdir = "E:/temp_raster_directory") # custom directory for temporary files
-terraOptions(tempdir = "E:/temp_raster_directory") # custom directory for temporary files
+rasterOptions(tmpdir = "F:/temp_raster_directory") # custom directory for temporary files
+terraOptions(tempdir = "F:/temp_raster_directory") # custom directory for temporary files
 
 
 #### DIRECTORIES ####
 # working directory and relative folder path
-setwd("E:/Data/StuartC_DPhil_Ch1/")
-# set_here("E:/Data/StuartC_DPhil_Ch1/") set first-time only
+setwd("F:/Data/StuartC_DPhil_Ch1/")
+# set_here("F:/Data/StuartC_DPhil_Ch1/") set first-time only
 here::i_am(".here")
 here::here() # verify where we are according to the here package
 
@@ -36,7 +37,7 @@ here::here() # verify where we are according to the here package
 set.seed(123)
 
 # load working environment from modelling script
-load(here("Code", "Nutrientscape_Modelling.RData"))
+load(here("Code", "04_Modelling_Nutrientscape.RData"))
 
 # we only need the fitted model objects, model results, and our project's coordinate
 # reference information for this script
@@ -51,14 +52,14 @@ eastness = rast(here("Data", "Rasters", "QEastness_400m.tif"))
 northness = rast(here("Data", "Rasters", "QNorthness_400m.tif"))
 landdist = rast(here("Data", "Rasters", "LandDist_400m.tif"))
 fine_habitat = rast(here("Data", "Rasters", "Habitat_400m.tif"))
-seabird_biomass = rast(here("Data", "Rasters", "Seabird_Biomass_400m.tif"))
+seabird_biomass = rast(here("Data", "Rasters", "Seabird_Biomass_IDW_400m.tif"))
 
 # we won't be making predictions over land at all so exclude all cells with a
 # a depth >= 0.5 m (the tidal range of Tetiaroa)
 # create a new raster where areas with values >= 0.5 are set to NA
-motus = st_read(here("Data", "GIS", "Motus.shp"))
-compareCRS(motus, my_crs)
-depth_clipped = mask(depth, motus, inverse = TRUE)
+motu = st_read(here("Data", "GIS", "Motus.shp"))
+compareCRS(motu, my_crs)
+depth_clipped = mask(depth, motu, inverse = TRUE)
 #plot(depth_clipped)
 
 # do the same for all other rasters
@@ -150,8 +151,8 @@ longitude_raster = raster::init(depth_clipped, fun = 'x')  # fill with longitude
 latitude_raster = raster::init(depth_clipped, fun = 'y')   # fill with latitude (y) values
 
 # clip out the land areas
-longitude_clipped = mask(rast(longitude_raster), depth_clipped)
-latitude_clipped = mask(rast(latitude_raster), depth_clipped)
+longitude_clipped = mask(longitude_raster, depth_clipped)
+latitude_clipped = mask(latitude_raster, depth_clipped)
 plot(longitude_clipped, main = "Longitude Raster")
 plot(latitude_clipped, main = "Latitude Raster")
 

@@ -27,13 +27,13 @@ conflict_prefer("select", "dplyr")
 conflict_prefer("filter", "dplyr")
 rasterOptions(progress = 'text') # progress info for processing large rasters
 options(terra.progress = 1) # progress info for processing large rasters
-rasterOptions(tmpdir = "E:/temp_raster_directory") # custom directory for temporary files
-terraOptions(tempdir = "E:/temp_raster_directory") # custom directory for temporary files
+rasterOptions(tmpdir = "F:/temp_raster_directory") # custom directory for temporary files
+terraOptions(tempdir = "F:/temp_raster_directory") # custom directory for temporary files
 
 #### DIRECTORIES ####
 # working directory and relative folder path
-setwd("E:/Data/StuartC_DPhil_Ch1/")
-# set_here("E:/Data/StuartC_DPhil_Ch1/") set first-time only
+setwd("F:/Data/StuartC_DPhil_Ch1/")
+# set_here("F:/Data/StuartC_DPhil_Ch1/") set first-time only
 here::i_am(".here")
 here::here() # verify where we are according to the here package
 

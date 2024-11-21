@@ -13,13 +13,13 @@ conflicted::conflict_prefer("filter", "dplyr")
 conflicted::conflict_prefer("extract", "raster")
 rasterOptions(progress = 'text') # progress info for processing large rasters
 options(terra.progress = 1) # progress info for processing large rasters
-rasterOptions(tmpdir = "E:/temp_raster_directory") # custom directory for temporary files
-terraOptions(tempdir = "E:/temp_raster_directory") # custom directory for temporary files
+rasterOptions(tmpdir = "F:/temp_raster_directory") # custom directory for temporary files
+terraOptions(tempdir = "F:/temp_raster_directory") # custom directory for temporary files
 
 #### DIRECTORIES ####
 # working directory and relative folder path
-setwd("E:/Data/StuartC_DPhil_Ch1/")
-# set_here("E:/Data/StuartC_DPhil_Ch1/") set first-time only
+setwd("F:/Data/StuartC_DPhil_Ch1/")
+# set_here("F:/Data/StuartC_DPhil_Ch1/") set first-time only
 here::i_am(".here")
 here::here() # verify where we are according to the here package
 
@@ -183,42 +183,20 @@ all_algae$Motu = ifelse(all_algae$Motu == "Rimatuu", "Rimatu'u", all_algae$Motu)
 unique(all_algae$Motu) 
 
 #### ADD BIOGEOPHYSICAL DATA ####
-# add the seabird data previously prepared
-seabird = read.csv(here("Data", "Seabirds", "Seabird_Summary_Data_2021_2023.csv"))
-
-# check and fix motu names in bird data as needed
-unique(seabird$Motu) 
-seabird$Motu = ifelse(seabird$Motu == "Hiraanae", "Hīra'a'ānae", seabird$Motu)
-seabird$Motu = ifelse(seabird$Motu == "Tiaraunu", "Ti'ara'aunu", seabird$Motu)
-seabird$Motu = ifelse(seabird$Motu == "Oroatera", "Horoāterā", seabird$Motu)
-seabird$Motu = ifelse(seabird$Motu == "Aie", "'Ă'ie", seabird$Motu)
-seabird$Motu = ifelse(seabird$Motu == "Auroa", "Ahuroa", seabird$Motu)
-seabird$Motu = ifelse(seabird$Motu == "Rimatuu", "Rimatu'u", seabird$Motu)
-
-# add the seabird data to the algae data as new columns 
-all_algae = left_join(all_algae, seabird, by = "Motu")
-
-# checking for any NAs across the data
-summary(all_algae)
-
-# there are NAs in the two seabird standard deviation columns - this is ok - because
-# Honuea was only sampled in one year, so there is nothing to calculate standard deviation
-# from
-
-# future models will only predict nutrient conditions within 400m of motu edges. 
-# this is based on previous papers which have provided evidence  of seabird nutrient
-# assimilation in algae, coral, and other marine endmembers up to 100s of meters offshore.
-# see references: 
-# Lorrain et al., 2017, Scientific Reports 7: 3721→ Surprise and Reynard, New Caledonia
-# Graham et a., 2018, Nature, 559: 250-253 → Chagos Archipelago
-# Savage et al., 2019, Scientific Reports, 9:4284 → Namena & Cousteau, Fiji Arhcipelago
-# Benkwitt et al., 2021, Current Biology 31, 2704–2711 → Scattered Islands & Chagos Archipelago
+# # future models will only predict nutrient conditions within 400m of motu edges. 
+# # this is based on previous papers which have provided evidence  of seabird nutrient
+# # assimilation in algae, coral, and other marine endmembers up to 100s of meters offshore.
+# # see references: 
+# # Lorrain et al., 2017, Scientific Reports 7: 3721→ Surprise and Reynard, New Caledonia
+# # Graham et a., 2018, Nature, 559: 250-253 → Chagos Archipelago
+# # Savage et al., 2019, Scientific Reports, 9:4284 → Namena & Cousteau, Fiji Arhcipelago
+# # Benkwitt et al., 2021, Current Biology 31, 2704–2711 → Scattered Islands & Chagos Archipelago
 
 # open the motu shapefile made previously
-motus = st_read(here("Data", "GIS", "Motus.shp"))
+motu = st_read(here("Data", "GIS", "Motus.shp"))
 
 # create a 400-m buffer around each motu
-motu_buffer = st_buffer(motus, dist = 400)
+motu_buffer = st_buffer(motu, dist = 400)
 
 # adjust place names
 motu_buffer$Motu = ifelse(motu_buffer$Motu == "Hiraanae", "Hīra'a'ānae", motu_buffer$Motu)
@@ -228,10 +206,6 @@ motu_buffer$Motu = ifelse(motu_buffer$Motu == "Aie", "'Ă'ie", motu_buffer$Motu)
 motu_buffer$Motu = ifelse(motu_buffer$Motu == "Auroa", "Ahuroa", motu_buffer$Motu)
 motu_buffer$Motu = ifelse(motu_buffer$Motu == "Rimatuu", "Rimatu'u", motu_buffer$Motu)
 
-# add the seabird data associated with each motu
-motu_buffer = motu_buffer %>%
-  left_join(seabird, by = "Motu")
-
 # create an empty raster with the same extent and CRS as motu_buffer
 raster_template = raster(
   extent(motu_buffer),       # use the extent of motu_buffer
@@ -239,23 +213,6 @@ raster_template = raster(
   resolution = c(0.3, 0.3)       # set the resolution to 3 x 3 meters
 )
 
-# rasterize the motu_buffer polygons, using avg_breeding_biomass_kgha_motu 
-# as the value. !!! NOTE !!! the rasterize function will take roughly one
-# hour to run due to the fine spatial resolution of the raster template. 
-writeRaster((rasterize(
-  motu_buffer,  # spatial polygons
-  raster_template,  # raster template
-  field = "avg_breeding_biomass_kgha_motu",  # column with the values to assign
-  fun = 'mean')), # function to handle multiple polygons per cell
-            here("Data", "Rasters", "Seabird_Biomass_400m.tif"),
-            overwrite = TRUE)
-# read back in the raster to confirm it worked
-motu_raster = raster(here("Data", "Rasters", "Seabird_Biomass_400m.tif"))
-compareCRS(motu_raster, my_crs) # should be TRUE
-res(motu_raster) # should be 0.3 x 0.3 m
-plot(motu_raster) # take a look
-
-#### BRING TOGETHER ALGAE AND BIOPHYSICAL DATA ####
 # convert the tabular algae data to spatial data and transform to 
 # desired CRS
 algae_sf = all_algae %>%
@@ -275,6 +232,7 @@ sapa = raster(here("Data", "Rasters", "SAPARugosity.tif"))
 landdist = raster(here("Data", "Rasters", "LandDist.tif"))
 onetahidist = raster(here("Data", "Rasters", "OnetahiDist.tif"))
 habitat = raster(here("Data", "Rasters", "Habitat_2m.tif"))
+seabirds = raster(here("Data", "Rasters", "Seabird_Biomass_IDW.tif"))
 
 # check that they all align, have the same CRS and resolution
 compareRaster(x = c(topobathy, slope, aspect, eastness, northness, 
@@ -298,10 +256,8 @@ compareRaster(habitat, topobathy, extent = T, crs = T, rowcol = T, res = T)
 # clip the other rasters to also have an extent only up to 400m offshore
 depth_400m = mask(crop(topobathy, extent(motu_buffer)), 
                   as(motu_buffer, "Spatial"))
-# resampling seabird data so it aligns with the others
-seabird_biomass_400m = crop(resample(motu_raster, depth_400m,
-                                     method = "bilinear"), extent(depth_400m))
-# clipping
+seabird_biomass_400m = mask(crop(seabirds, extent(motu_buffer)), 
+                            as(motu_buffer, "Spatial"))
 slope_400m = mask(crop(slope, extent(motu_buffer)), 
                   as(motu_buffer, "Spatial"))
 plancurv_400m = mask(crop(planc, extent(motu_buffer)), 
@@ -325,7 +281,7 @@ onetahidist_400m = mask(crop(onetahidist, extent(motu_buffer)),
 habitat_400m = raster::mask(raster::crop(habitat, extent(motu_buffer)), 
                             as(motu_buffer, "Spatial"))
 
-# compare the resolutions, extents, row/columns, and CRSs of all rasters
+# compare the resolutions, extents, row/columns, and CRS of all rasters
 # this should print out "TRUE" if the rasters are properly aligned
 compareRaster(c(depth_400m, slope_400m, plancurv_400m, profcurv_400m,
                 meancurv_400m, aspect_400m, eastness_400m, 
@@ -346,20 +302,21 @@ writeRaster(sapa_400m, here("Data", "Rasters", "SAPARugosity_400m.tif"), overwri
 writeRaster(landdist_400m, here("Data", "Rasters", "LandDist_400m.tif"), overwrite = TRUE)
 writeRaster(onetahidist_400m, here("Data", "Rasters", "OnetahiDist_400m.tif"), overwrite = TRUE)
 writeRaster(habitat_400m, here("Data", "Rasters", "Habitat_400m.tif"), overwrite = TRUE)
-writeRaster(seabird_biomass_400m, here("Data", "Rasters", "Seabird_Biomass_400m.tif"),
+writeRaster(seabird_biomass_400m, here("Data", "Rasters", "Seabird_Biomass_IDW_400m.tif"),
             overwrite = TRUE)
 
 # remove the large, full rasters that cover the entirety of Tetiaroa
 # only work with those up to 400m offshore moving forward
 rm(list = c("topobathy", "slope", "meanc", "planc", "profc", "aspect",
             "eastness", "northness", "sapa", "landdist", "onetahidist",
-            "motu_raster", "habitat"))
+            "habitat"))
 
 # create a raster stack with all desired predictors
 env = stack(x = c(habitat_400m, depth_400m, slope_400m, aspect_400m,
                   eastness_400m, northness_400m, meancurv_400m, 
-                  plancurv_400m, profcurv_400m, sapa_400m,landdist_400m,
+                  plancurv_400m, profcurv_400m, sapa_400m, landdist_400m,
                   onetahidist_400m, seabird_biomass_400m))
+
 # assign names to layers in stack
 names(env) = c("habitat_400m", "depth_400m", "slope_400m", "aspect_400m",
                "eastness_400m", "northness_400m", "meancurv_400m", 
@@ -376,10 +333,7 @@ algae_w_predictors = as.data.frame(algae_w_predictors) # save as dataframe
 
 # some quick renaming
 algae_w_predictors = algae_w_predictors %>%
-  rename(Avg_Breeding_Bird_Density = avg_breeding_density_ha_motu,
-         SD_Breeding_Bird_Density = std_breeding_density_ha_motu,
-         Avg_Breeding_Bird_Biomass = avg_breeding_biomass_kgha_motu,
-         SD_Breeding_Bird_Biomass = std_breeding_biomass_kgha_motu,
+  rename(Breeding_Seabird_Biomass = seabird_biomass_400m,
          Habitat_Resampled_30cm = habitat_400m,
          Depth = depth_400m,
          Slope = slope_400m,

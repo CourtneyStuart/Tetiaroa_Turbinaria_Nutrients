@@ -20,21 +20,20 @@ conflicted::conflict_prefer("partial", "pdp")
 conflicted::conflict_prefer("draw", "gratia")
 rasterOptions(progress = 'text') # progress info for processing large rasters
 options(terra.progress = 1) # progress info for processing large rasters
-rasterOptions(tmpdir = "E:/temp_raster_directory") # custom directory for temporary files
-terraOptions(tempdir = "E:/temp_raster_directory") # custom directory for temporary files
-
+rasterOptions(tmpdir = "F:/temp_raster_directory") # custom directory for temporary files
+terraOptions(tempdir = "F:/temp_raster_directory") # custom directory for temporary files
 
 #### DIRECTORIES ####
 # working directory and relative folder path
-setwd("E:/Data/StuartC_DPhil_Ch1/")
-# set_here("E:/Data/StuartC_DPhil_Ch1/") set first-time only
+setwd("F:/Data/StuartC_DPhil_Ch1/")
+# set_here("F:/Data/StuartC_DPhil_Ch1/") set first-time only
 here::i_am(".here")
 here::here() # verify where we are according to the here package
 
 # set seed for future
 set.seed(123)
 
-# read in the algae-environment data prepped in 01_Baseline_Algae_Data_Prep.R
+# read in the algae-environment data prepped in 03_Preparing_Algae_Data.R
 algae = read.csv(here("Data", "Model_Data",
                       "Cleaned_Tetiaroa_2021_2023_Data.csv"))
 
@@ -103,7 +102,7 @@ ggplot(algae, aes(x = Land_Distance, y = Prof_Curve, color = Motu)) +
 #### CORRELATION/COLLINEARITY CHECK ####
 # keep only predictor columns
 corrdata = algae %>%
-  select(Longitude_UTM6S, Latitude_UTM6S, Coarse_Habitat_ID, 22:33, 
+  select(Longitude_UTM6S, Latitude_UTM6S, Coarse_Habitat_ID, 18:29, 
          -Aspect, -Onetahi_Distance)
 
 # check for correlation among the predictors
@@ -114,7 +113,7 @@ cormat = cor(corrdata,
 palette = pnw_palette("Shuksan2", 200, type = "continuous")
 
 # set plotting margins
-par(mar=c(0,0,0,0))
+par(mar = c(0,0,0,0))
 
 # create and save the full correlation plot
 corrplot(cormat, method = "color", col = palette, type = "upper",
@@ -144,7 +143,7 @@ print(vifstep(corrdata, th = 5))
 # SAPA rugosity and slope are correlated, does SAPA rugosity or slope really vary
 # that much across algae collection sites?
 summary(algae$SAPA_Rugosity)
-par(mar=c(2,2,2,2))
+par(mar = c(2,2,2,2))
 hist(algae$SAPA_Rugosity)
 
 summary(algae$Slope)
@@ -206,7 +205,7 @@ correlation_plots = plot_grid(
   ggdraw(corr_plot2) + theme(plot.background = element_rect(fill = "white", color = NA),
                              plot.margin = unit(c(0, 0, 0, 0), "cm")),
   ncol = 2, rel_widths = c(1, 1),
-  labels = c("(A)", "(B)"), 
+  labels = c("(a)", "(b)"), 
   label_size = 14,  
   label_fontface = "bold",
   label_y = c(0.85, 0.85))
@@ -215,7 +214,6 @@ plot(correlation_plots) # take a look
 # save the combined plot
 ggsave(here("Figures", "Correlation_Plots.png"), correlation_plots,
        width = 12, height = 6, dpi = 400, bg = "white")
-
 
 #### SPATIAL AUTOCORRELATION CHECK ####
 # save PROJ.4 string for Tetiaroa projection before reading in spatial data
@@ -271,7 +269,7 @@ plot(N15_svgm_plot)
 #### GAMS with LOOCV ####
 # update data frame to keep only the columns needed for modelling, 
 model_data = algae %>%
-  select(N15, Coarse_Habitat_ID, 22:33, 
+  select(N15, Coarse_Habitat_ID, 18:29, 
          Longitude_UTM6S, Latitude_UTM6S, Year,
          -Aspect, -Mean_Curve, -SAPA_Rugosity,
          -Onetahi_Distance) %>%
@@ -457,7 +455,6 @@ coordinates(GAM2_plot) = ~ Longitude_UTM6S + Latitude_UTM6S
 plot(variogram(res_GAM2 ~ 1, data = GAM2_plot))
 # good - no evidence of  remaining spatial autocorrelation in the model residuals
 
-
 #### COMBINE GAM1 & GAM2 RESULTS ####
 # combine the model results and calculate errors around predicted N15 values
 results = inner_join((algae %>% 
@@ -497,10 +494,10 @@ for (i in 1:n) {
   test_data = model_data[i, , drop = FALSE]
   
   # fit the GAM on the training data
-  sgam_ns = gam(N15 ~ Coarse_Habitat + s(Seabird_Biomass) + s(Depth) + s(Slope) +
-                s(Eastness) + s(Northness) + s(Plan_Curve) + s(Prof_Curve) +
-                s(Land_Distance) + s(Onetahi_Distance) + Year,
-              data = train_data, method = "REML")
+  sgam_ns = gam(N15 ~ Coarse_Habitat_ID + s(Seabird_Biomass) + s(Depth) +
+                  s(Slope) + s(Eastness) + s(Northness) + s(Plan_Curve) + 
+                  s(Prof_Curve) + s(Land_Distance)  + Year,
+                data = train_data, method = "REML")
   
   # predict on the testing data
   sgam_ns_predicted = predict(sgam_ns, newdata = test_data)
@@ -571,5 +568,5 @@ sgam_ns_plot$res_sgam_ns = res_sgam_ns
 coordinates(sgam_ns_plot) = ~ Longitude_UTM6S + Latitude_UTM6S
 plot(variogram(res_sgam_ns ~ 1, data = sgam_ns_plot))
 
-# bad news - there is evidence of remaining spatial autocorrelation in the residuals
-# of the non-spatial GAM!!!!!!!!
+# It's a good thing we did spatial GAMs above - there is evidence of remaining spatial 
+# autocorrelation in the residuals of the non-spatial GAM!!!!!!!!
