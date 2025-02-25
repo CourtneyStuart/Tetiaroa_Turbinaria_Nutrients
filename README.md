@@ -2,7 +2,7 @@
 This repository holds code, data, and other files related to the first data chapter of Courtney Stuart’s PhD research at the University of Oxford [Seascape Ecology Lab](https://www.oxfordseascapeecologylab.com/) (P.I. Dr Lisa Wedding). Courtney's PhD research is part of the [Seabird-Island-Reef](https://www.marine.science/project/implications-of-nutrient-flow-and-feedback-across-the-seabird-island-reef-system/) project funded by the [Bertarelli Foundation](https://www.fondation-bertarelli.org/) and led by P.I. Nick Graham of Lancaster University, and supports the ongoing [Tetiaroa Atoll Restoration Project](https://www.tetiaroasociety.org/programs/conservation/tetiaroa-habitat-restoration-program). 
 
 # Citation
-Stuart, CE, Pittman, SJ, Stamoulis, KA, Benkwitt, CE, Epstein, HE, Graham, NAJ, Smith, AC, Lacey, JH, Bistolas, KSI, DeVore, JL, Ducatez, S, & Wedding, LM. Seascape configuration determines spatial patterns of seabird-vectored nutrient enrichment to coral reefs. In Revision at *Ecography*.
+Stuart, CE, Pittman, SJ, Stamoulis, KA, Benkwitt, CE, Epstein, HE, Graham, NAJ, Smith, AC, Lacey, JH, Bistolas, KSI, DeVore, JL, Ducatez, S, & Wedding, LM. Seascape configuration determines spatial patterns of seabird-vectored nutrient enrichment to coral reefs. *In Revision at Ecography*.
 
 
 # Abstract
