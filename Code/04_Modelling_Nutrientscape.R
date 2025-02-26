@@ -277,7 +277,7 @@ model_data = algae %>%
   mutate(Year = as.factor(Year))
 str(model_data)
 
-#### GAM1 ####
+#### GAM1 - All predictors ####
 # initialize vectors for storing results
 n = nrow(model_data)
 GAM1_squared_error = numeric(n)
@@ -312,6 +312,9 @@ for (i in 1:n) {
   # print progress
   cat("Completed iteration", i, "of", n, "\n")
 }
+
+# save the model object
+saveRDS(GAM1, here("Data", "Model_Data", "GAM1.rds"))
 
 # calculate the average of the squared errors to get the LOOCV error estimate
 mean_GAM1_squared_error = round(mean(GAM1_squared_error), dig = 2)
@@ -400,6 +403,9 @@ for (i in 1:n) {
   # print progress
   cat("Completed iteration", i, "of", n, "\n")
 }
+
+# save the model object
+saveRDS(GAM2, here("Data", "Model_Data", "GAM2.rds"))
 
 # calculate the average of the squared errors to get the LOOCV error estimate
 mean_GAM2_squared_error = round(mean(GAM2_squared_error), dig = 2)
