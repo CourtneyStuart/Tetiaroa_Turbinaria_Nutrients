@@ -333,8 +333,10 @@ summary.gam(GAM1)
 gam.check(GAM1)
 
 # check results vs. model assumptions
-plot_gam_check(GAM1, scatter = TRUE)
-check_model(GAM1, check = c("normality", "homogeneity"))  
+diagnostics_GAM1 = plot_gam_check(GAM1, scatter = TRUE)
+ggsave(here("Figures", "Diagnostic_Plots_GAM1.png"), diagnostics_GAM1,
+       width = 8, height = 6, dpi = 400, bg = "white")
+check_model(GAM1, check = c("normality", "homogeneity")) 
 
 # check AIC of the model
 AIC_GAM1 = round(AIC(GAM1), dig = 2)
@@ -424,7 +426,9 @@ summary.gam(GAM2)
 gam.check(GAM2)
 
 # check results vs. model assumptions
-plot_gam_check(GAM2, scatter = TRUE)
+diagnostics_GAM2 = plot_gam_check(GAM2, scatter = TRUE)
+ggsave(here("Figures", "Diagnostic_Plots_GAM2.png"), diagnostics_GAM2,
+       width = 8, height = 6, dpi = 400, bg = "white")
 check_model(GAM2, check = c("normality", "homogeneity"))  
 
 # check AIC of the model
