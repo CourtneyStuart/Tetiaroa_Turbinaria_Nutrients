@@ -156,7 +156,7 @@ GAM1_birds = draw(GAM1, select = "s(Seabird_Biomass)") &
         plot.subtitle = element_blank()) &
   scale_x_continuous(labels = scales::label_number(accuracy = 0.01)) &
   scale_y_continuous(labels = scales::label_number(accuracy = 0.01)) &
-  labs(y = "s(Seabird_Biomass)", x = "Breeding seabird biomass (kg/ha)", 
+  labs(y = "s(Seabird_Biomass)", x = "Spatialised seabird biomass (kg/ha)", 
        title = NULL)
 GAM1_birds = GAM1_birds +
   annotate("text", x = Inf, y = Inf, label = "italic(p == 0.01)", 
@@ -428,7 +428,7 @@ land_smooths_with_rug = land_smooths_with_rug +
 # print the plot
 print(land_smooths_with_rug)
 
-#### Breeding seabird biomass ####
+#### Spatialised seabird biomass ####
 # extract data for specific smooth terms from both models
 smooths_GAM1_bird = extract_smooth_term(GAM1, "s(Seabird_Biomass)")
 smooths_GAM2_bird = extract_smooth_term(GAM2, "s(Seabird_Biomass)")
@@ -443,7 +443,7 @@ bird_smooths = ggplot(smooths_bird_combined,
                       aes(x = Seabird_Biomass, y = est, color = color)) +
   geom_line() +
   geom_ribbon(aes(ymin = lower_ci, ymax = upper_ci, fill = color), alpha = 0.4, linetype = 0) +
-  labs(x = "Breeding seabird biomass (kg/ha)",
+  labs(x = "Spatialised seabird biomass (kg/ha)",
        y = "s(Seabird_Biomass)",
        color = "Model",
        fill = "Model") +
@@ -470,7 +470,7 @@ bird_smooths_with_rug = ggplot() +
               aes(x = Seabird_Biomass, y = est, color = color,
                   ymin = lower_ci, ymax = upper_ci, fill = color), alpha = 0.4, linetype = 0) +
   geom_rug(data = model_data, aes(x = Seabird_Biomass), sides = "b", alpha = 0.5) +  # Add rug plot with different data
-  labs(x = "Breeding seabird biomass (kg/ha)",
+  labs(x = "Spatialised seabird biomass (kg/ha)",
        y = "s(Seabird_Biomass)",
        color = "Model",
        fill = "Model") +
@@ -551,6 +551,12 @@ plot(combined_no_y)
 # save the combined results
 save_plot(
   filename = here("Figures", "Combined_Smooths_Single_Y_Label.png"),
+  plot = combined_no_y,
+  base_height = 8, base_width = 16, dpi = 400)
+
+# final version for publication
+save_plot(
+  filename = here("Figures", "Final_Versions", "Figure_2.png"),
   plot = combined_no_y,
   base_height = 8, base_width = 16, dpi = 400)
 
@@ -829,7 +835,7 @@ ggplot(results, aes(x = Seabird_Biomass, y = Error_N15_GAM1)) +
   geom_point(color = "gray20", size = 3) +  # Scatter plot points
   geom_smooth(method = "lm", se = FALSE, color = "black") +  # Best fit line
   labs(title = "Scatterplot of Seabird Biomass vs. Error_N15_GAM1",
-       x = "Breeding seabird biomass (kg/ha)",
+       x = "Spatialised seabird biomass (kg/ha)",
        y = "Error in δ15N predictions (‰)") +
   theme_minimal()
 
