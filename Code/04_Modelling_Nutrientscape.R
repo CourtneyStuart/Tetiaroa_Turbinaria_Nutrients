@@ -103,7 +103,8 @@ ggplot(algae, aes(x = Land_Distance, y = Prof_Curve, color = Motu)) +
 # keep only predictor columns
 corrdata = algae %>%
   select(Longitude_UTM6S, Latitude_UTM6S, Coarse_Habitat_ID, 18:29, 
-         -Aspect, -Onetahi_Distance)
+         -Aspect, -Onetahi_Distance) %>%
+  rename(Spatialised_Seabird_Biomass = Seabird_Biomass)
 
 # check for correlation among the predictors
 cormat = cor(corrdata, 
@@ -197,23 +198,31 @@ corr_plot2 = function() {
            number.digits = 2, tl.col = "black", tl.srt = 40, tl.cex = 0.8)
 }
 
-# combine the plots side by side with labels (A) and (B)
-library(gridGraphics)
+# combine the plots side by side
+library(cowplot)
 correlation_plots = plot_grid(
-  ggdraw(corr_plot1) + theme(plot.background = element_rect(fill = "white", color = NA),
-                             plot.margin = unit(c(0, 0, 0, 0), "cm")),
-  ggdraw(corr_plot2) + theme(plot.background = element_rect(fill = "white", color = NA),
-                             plot.margin = unit(c(0, 0, 0, 0), "cm")),
-  ncol = 2, rel_widths = c(1, 1),
-  labels = c("(a)", "(b)"), 
+  ggdraw(corr_plot1) + theme(
+    plot.background = element_rect(fill = "white", color = NA),
+    plot.margin = unit(c(0, 0, 0, 0), "cm")),
+  ggdraw(corr_plot2) + theme(
+    plot.background = element_rect(fill = "white", color = NA),
+    plot.margin = unit(c(0., 0, 0, 0), "cm")),
+  ncol = 2,  # 
+  align = "h",  
+  rel_widths = c(1, 1),  
+  labels = c("(A)", "(B)"), 
   label_size = 14,  
   label_fontface = "bold",
   label_y = c(0.85, 0.85))
-plot(correlation_plots) # take a look
+plot(correlation_plots)
 
 # save the combined plot
 ggsave(here("Figures", "Correlation_Plots.png"), correlation_plots,
-       width = 12, height = 6, dpi = 400, bg = "white")
+       width = 15, height = 10, dpi = 400, bg = "white")
+
+# save to the publication folder
+ggsave(here("Figures", "Final_Versions", "Figure_S2.png"), correlation_plots,
+       width = 15, height = 10, dpi = 400, bg = "white")
 
 #### SPATIAL AUTOCORRELATION CHECK ####
 # save PROJ.4 string for Tetiaroa projection before reading in spatial data
