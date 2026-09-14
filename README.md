@@ -12,7 +12,7 @@ Pelagic-feeding seabirds deliver nutrient subsidies that enhance the productivit
 Seascape ecology, Seabirds, Marine subsidies, Restoration, Atoll, Stable Isotopes
 
 # Usage & Restrictions
-You are welcome to use and borrow from this code base according to the license below. However, access to the raw algae, seabird, habitat, and LiDAR datasets must first be approved by the original data collectors. Please email your inquiries to Courtney Stuart (@courtney.e.stuart@gmail.com or @courtney.stuart@mansfield.ox.ac.uk) so that your requests can be forwarded to the appropriate contacts.
+You are welcome to use and borrow from this code base according to the license below. However, access to the raw algae, seabird, habitat, and LiDAR datasets must first be approved by the original data collectors. Please email your inquiries to Courtney Stuart (@courtney.seascape@gmail.com or @courtney.stuart@mansfield.ox.ac.uk) so that your requests can be forwarded to the appropriate contacts.
 
 Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
 
